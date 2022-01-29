@@ -18,7 +18,7 @@ with open('transactions.csv', 'r') as csv_file:
             continue
 
         memo = row[1] + ';' + row[0]
-        timestamp = datetime.datetime.fromtimestamp(int(row[2]))
+        timestamp = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
         txnFeeETH = float(row[10])
         price = float(row[12])
 
