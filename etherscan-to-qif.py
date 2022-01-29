@@ -17,12 +17,12 @@ with open('transactions.csv', 'r') as csv_file:
         if row[4] != ADDRESS:
             continue
 
-        txhash = row[0]
+        memo = row[1] + ';' + row[0]
         timestamp = datetime.datetime.fromtimestamp(int(row[2]))
         txnFeeETH = float(row[10])
         price = float(row[12])
 
-        tr1 = qif.Investment(date=timestamp, action="SellX", quantity=txnFeeETH, price=price, memo=txhash, security="ETH")
+        tr1 = qif.Investment(date=timestamp, action="SellX", quantity=txnFeeETH, price=price, memo=memo, security="ETH")
 
         tr1._fields[4].custom_print_format='%s%.18f'
 
