@@ -2,8 +2,11 @@ import qifparse.qif as qif
 import datetime
 import csv
 import os
+import requests
+import json
 
 ADDRESS=os.environ['ADDRESS']
+INFURA_ID=os.environ['INFURA_ID']
 
 with open('oasis.csv', 'r') as csv_file:
     reader = csv.reader(csv_file)
@@ -25,8 +28,16 @@ with open('oasis.csv', 'r') as csv_file:
 
         txhash = row[9]
 
-        tr1 = qif.Investment(date=timestamp, action="SellX", quantity=sellAmount, price=(1.00 if sellCurrency == "USDC" else (sellAmount / buyAmount)), memo=txhash, security=sellCurrency)
-        tr2 = qif.Investment(date=timestamp, action="BuyX", quantity=buyAmount, price=(1.00 if buyCurrency == "USDC" else (buyAmount / sellAmount)), memo=txhash, security=buyCurrency)
+        block_number = requests.post('https://mainnet.infura.io/v3/' + INFURA_ID, data=json.dumps({
+            "id": 1337,
+            "jsonrpc": "2.0",
+            "method": "eth_getTransactionByHash",
+            "params": [txhash]
+        })).json()['result']['blockNumber']
+        memo = str(int(block_number, 16)) + ';' + txhash + ';Oasis'
+
+        tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=(1.00 if sellCurrency == "USDC" else (buyAmount / sellAmount)), memo=memo, security=(sellCurrency+'-USD'))
+        tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=(1.00 if buyCurrency == "USDC" else (sellAmount / buyAmount)), memo=memo, security=(buyCurrency+'-USD'))
 
         tr1._fields[4].custom_print_format='%s%.18f'
         tr2._fields[4].custom_print_format='%s%.18f'

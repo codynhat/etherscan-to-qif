@@ -22,7 +22,7 @@ with open('transactions.csv', 'r') as csv_file:
         txnFeeETH = float(row[10])
         price = float(row[12])
 
-        tr1 = qif.Investment(date=timestamp, action="SellX", quantity=txnFeeETH, price=price, memo=memo, security="ETH")
+        tr1 = qif.Investment(date=timestamp, action="SellX", quantity=txnFeeETH, price=price, memo=memo, security="ETH-USD")
 
         tr1._fields[4].custom_print_format='%s%.18f'
 
