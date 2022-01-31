@@ -19,14 +19,12 @@ with open('zerion.csv', 'r') as csv_file:
     qif_obj.add_account(acc)
 
     for row in reader:
-        if row[5] != "Trade":
+        if row[5] != "Income":
             continue
 
         buyAmount = float(row[6])
         fiatAmount = float(row[9])
         buyCurrency = row[7]
-        sellAmount = float(row[11])
-        sellCurrency = row[12]
 
         timestamp = datetime.datetime.strptime(row[24], "%Y-%m-%dT%H:%M:%S.000Z")
 
@@ -40,7 +38,7 @@ with open('zerion.csv', 'r') as csv_file:
         })).json()['result']['blockNumber']
         memo = str(int(block_number, 16)) + ';' + txhash + ';Zerion'
 
-        tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=(fiatAmount/sellAmount), memo=memo, security=(sellCurrency+'-USD'))
+        tr1 = qif.Transaction(date=timestamp, amount=fiatAmount, memo=memo)
         tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=(fiatAmount/buyAmount), memo=memo, security=(buyCurrency+'-USD'))
 
         tr1._fields[4].custom_print_format='%s%.18f'
