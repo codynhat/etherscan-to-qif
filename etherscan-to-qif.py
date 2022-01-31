@@ -5,7 +5,7 @@ import os
 
 ADDRESS=os.environ['ADDRESS']
 
-with open('transactions.csv', 'r') as csv_file:
+with open('etherscan.csv', 'r') as csv_file:
     reader = csv.reader(csv_file)
 
     qif_obj = qif.Qif()
