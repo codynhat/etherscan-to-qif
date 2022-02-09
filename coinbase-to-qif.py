@@ -19,17 +19,26 @@ with open('coinbase.csv', 'r') as csv_file:
         memo = row[9]
         timestamp = datetime.datetime.strptime(row[0], "%Y-%m-%dT%H:%M:%SZ")
 
-        if row[1] != "Buy":
-            continue
+        if row[1] == "Buy":
+            buyAmount = float(row[3])
+            buyCurrency = row[2]
+            spotPrice = float(row[5])
 
-        buyAmount = float(row[3])
-        buyCurrency = row[2]
-        spotPrice = float(row[5])
+            tr1 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=spotPrice, memo=memo, security=(buyCurrency+'-USD'))
 
-        tr1 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=spotPrice, memo=memo, security=(buyCurrency+'-USD'))
+            tr1._fields[4].custom_print_format='%s%.18f'
 
-        tr1._fields[4].custom_print_format='%s%.18f'
+            acc.add_transaction(tr1, header='!Type:Invst')
+        elif row[1] == "Paid for an order":
+            amount = float(row[3])
+            currency = row[2]
+            spotPrice = float(row[5])
 
-        acc.add_transaction(tr1, header='!Type:Invst')
+            tr1 = qif.Investment(date=timestamp, action="SellX", quantity=amount, price=spotPrice, memo=memo, security=(currency+'-USD'))
+
+            tr1._fields[4].custom_print_format='%s%.18f'
+
+            acc.add_transaction(tr1, header='!Type:Invst')
+
 
     print(str(qif_obj))
