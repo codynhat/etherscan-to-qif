@@ -36,8 +36,20 @@ with open('oasis.csv', 'r') as csv_file:
         })).json()['result']['blockNumber']
         memo = str(int(block_number, 16)) + ';' + txhash + ';Oasis'
 
-        tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=(1.00 if sellCurrency == "USDC" else (buyAmount / sellAmount)), memo=memo, security=(sellCurrency+'-USD'))
-        tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=(1.00 if buyCurrency == "USDC" else (sellAmount / buyAmount)), memo=memo, security=(buyCurrency+'-USD'))
+        sellPrice = buyAmount / sellAmount
+        if sellCurrency == "USDC":
+            sellPrice = 1.00
+        elif sellCurrency == "DAI" and buyCurrency != "USDC":
+            sellPrice = 1.00
+
+        buyPrice = sellAmount / buyAmount
+        if buyCurrency == "USDC":
+            buyPrice = 1.00
+        elif buyCurrency == "DAI" and sellCurrency != "USDC":
+            buyPrice = 1.00
+
+        tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=sellPrice, memo=memo, security=(sellCurrency+'-USD'))
+        tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=buyPrice, memo=memo, security=(buyCurrency+'-USD'))
 
         tr1._fields[4].custom_print_format='%s%.18f'
         tr2._fields[4].custom_print_format='%s%.18f'
