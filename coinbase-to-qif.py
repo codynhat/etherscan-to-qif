@@ -5,6 +5,8 @@ import os
 import re
 
 ADDRESS=os.environ['ADDRESS']
+START_DATE=datetime.datetime(2020, 2, 27)
+END_DATE=datetime.datetime(2020, 9, 19)
 
 with open('coinbase.csv', 'r') as csv_file:
     reader = csv.reader(csv_file)
@@ -19,6 +21,9 @@ with open('coinbase.csv', 'r') as csv_file:
     for row in reader:
         memo = row[9]
         timestamp = datetime.datetime.strptime(row[0], "%Y-%m-%dT%H:%M:%SZ")
+
+        if timestamp <= START_DATE or timestamp > END_DATE:
+            continue
 
         if row[1] == "Buy":
             buyAmount = float(row[3])
@@ -58,6 +63,23 @@ with open('coinbase.csv', 'r') as csv_file:
 
             acc.add_transaction(tr1, header='!Type:Invst')
             acc.add_transaction(tr2, header='!Type:Invst')
+        elif row[1] == "Rewards Income":
+            buyAmount = float(row[3])
+            buyCurrency = row[2]
+            spotPrice = float(row[5])
+
+            tr1 = qif.Transaction(date=timestamp, amount=(buyAmount*spotPrice), memo=memo)
+            tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=spotPrice, memo=memo, security=(buyCurrency+'-USD'))
+
+            tr1._fields[4].custom_print_format='%s%.18f'
+            tr2._fields[4].custom_print_format='%s%.18f'
+
+            acc.add_transaction(tr1, header='!Type:Invst')
+            acc.add_transaction(tr2, header='!Type:Invst')
+        elif row[1] == "Send":
+            continue
+        else:
+            print("Unknown type: " + row[1])
 
 
     print(str(qif_obj))
