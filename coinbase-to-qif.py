@@ -76,6 +76,16 @@ with open('coinbase.csv', 'r') as csv_file:
 
             acc.add_transaction(tr1, header='!Type:Invst')
             acc.add_transaction(tr2, header='!Type:Invst')
+        elif row[1] == "Sell":
+            sellAmount = float(row[3])
+            sellCurrency = row[2]
+            spotPrice = float(row[5])
+
+            tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=spotPrice, memo=memo, security=(sellCurrency+'-USD'))
+
+            tr1._fields[4].custom_print_format='%s%.18f'
+
+            acc.add_transaction(tr1, header='!Type:Invst')
         elif row[1] == "Send":
             continue
         else:
