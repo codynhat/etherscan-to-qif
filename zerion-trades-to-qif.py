@@ -4,6 +4,7 @@ import csv
 import os
 import requests
 import json
+from functools import reduce
 
 ADDRESS=os.environ['ADDRESS']
 INFURA_ID=os.environ['INFURA_ID']
@@ -22,11 +23,13 @@ with open('zerion.csv', 'r') as csv_file:
         if row[2] != "Trade":
             continue
 
-        buyAmount = float(row[6])
-        fiatAmount = float(row[9]) if len(row[9]) > 0 else float(row[14])
-        buyCurrency = row[7]
-        sellAmount = float(row[11])
-        sellCurrency = row[12]
+        buyAmounts = row[6].split("\n")
+        fiatAmounts = row[9].split("\n") if len(row[9]) > 0 else row[14].split("\n")
+        totalFiatAmount = float(reduce(lambda a, b: float(a) + float(b), fiatAmounts))
+        buyCurrencies = row[7].split("\n")
+
+        sellAmounts = row[11].split("\n")
+        sellCurrencies = row[12].split("\n")
 
         timestamp = datetime.datetime.strptime(row[24], "%Y-%m-%dT%H:%M:%S.000Z")
 
@@ -40,15 +43,28 @@ with open('zerion.csv', 'r') as csv_file:
         })).json()['result']['blockNumber']
         memo = str(int(block_number, 16)) + ';' + txhash + ';Zerion'
 
-        tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=(fiatAmount/sellAmount), memo=memo, security=(sellCurrency+'-USD'))
-        tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=(fiatAmount/buyAmount), memo=memo, security=(buyCurrency+'-USD'))
+        for i in range(len(sellAmounts)):
+            sellAmount = float(sellAmounts[i])
+            fiatAmount = float(fiatAmounts[i]) if len(sellAmounts) > 1 else totalFiatAmount
+            sellCurrency = sellCurrencies[i]
+            if sellCurrency == "BPT-V1":
+                sellCurrency = sellCurrency + "-" + row[13]
 
-        tr1._fields[3].custom_print_format='%s%.10f'
-        tr1._fields[4].custom_print_format='%s%.18f'
-        tr2._fields[3].custom_print_format='%s%.10f'
-        tr2._fields[4].custom_print_format='%s%.18f'
+            tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=(fiatAmount/sellAmount), memo=memo, security=(sellCurrency+'-USD'))
+            tr1._fields[3].custom_print_format='%s%.10f'
+            tr1._fields[4].custom_print_format='%s%.18f'
+            acc.add_transaction(tr1, header='!Type:Invst')
 
-        acc.add_transaction(tr1, header='!Type:Invst')
-        acc.add_transaction(tr2, header='!Type:Invst')
+        for i in range(len(buyAmounts)):
+            buyAmount = float(buyAmounts[i])
+            fiatAmount = float(fiatAmounts[i]) if len(buyAmounts) > 1 else totalFiatAmount
+            buyCurrency = buyCurrencies[i]
+            if buyCurrency == "BPT-V1":
+                buyCurrency = buyCurrency + "-" + row[8]
+            
+            tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=(fiatAmount/buyAmount), memo=memo, security=(buyCurrency+'-USD'))
+            tr2._fields[3].custom_print_format='%s%.10f'
+            tr2._fields[4].custom_print_format='%s%.18f'
+            acc.add_transaction(tr2, header='!Type:Invst')
 
     print(str(qif_obj))
