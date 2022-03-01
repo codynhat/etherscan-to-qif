@@ -24,6 +24,9 @@ with open('zerion.csv', 'r') as csv_file:
             continue
         
         sellAmounts = row[11].split("\n")
+        if len(sellAmounts[0]) == 0:
+            continue
+        
         sellAmount = float(reduce(lambda a, b: float(a) + float(b), sellAmounts))
         sellCurrency = row[12].split("\n")[0]
         fiatAmounts = row[14].split("\n")
@@ -43,6 +46,7 @@ with open('zerion.csv', 'r') as csv_file:
 
         tr1 = qif.Investment(date=timestamp, action="SellX", quantity=sellAmount, price=(fiatAmount/sellAmount), memo=memo, security=(sellCurrency+'-USD'))
 
+        tr1._fields[3].custom_print_format='%s%.10f'
         tr1._fields[4].custom_print_format='%s%.18f'
 
         acc.add_transaction(tr1, header='!Type:Invst')

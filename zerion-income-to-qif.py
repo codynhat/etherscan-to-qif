@@ -23,7 +23,7 @@ with open('zerion.csv', 'r') as csv_file:
             continue
 
         buyAmount = float(row[6])
-        fiatAmount = float(row[9])
+        fiatAmount = float(row[9]) if len(row[9]) > 0 else 1
         buyCurrency = row[7]
 
         timestamp = datetime.datetime.strptime(row[24], "%Y-%m-%dT%H:%M:%S.000Z")
@@ -41,7 +41,9 @@ with open('zerion.csv', 'r') as csv_file:
         tr1 = qif.Transaction(date=timestamp, amount=fiatAmount, memo=memo)
         tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=(fiatAmount/buyAmount), memo=memo, security=(buyCurrency+'-USD'))
 
+        tr1._fields[3].custom_print_format='%s%.10f'
         tr1._fields[4].custom_print_format='%s%.18f'
+        tr2._fields[3].custom_print_format='%s%.10f'
         tr2._fields[4].custom_print_format='%s%.18f'
 
         acc.add_transaction(tr1, header='!Type:Invst')
