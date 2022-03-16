@@ -24,7 +24,7 @@ with open('zerion.csv', 'r') as csv_file:
             continue
 
         buyAmounts = row[6].split("\n")
-        fiatAmounts = row[9].split("\n") if len(row[9]) > 0 else row[14].split("\n")
+        fiatAmounts = row[9].split("\n") if len(row[9]) > 0 else (row[14].split("\n") if len(row[14]) > 0 else [0])
         totalFiatAmount = float(reduce(lambda a, b: float(a) + float(b), fiatAmounts))
         buyCurrencies = row[7].split("\n")
 
