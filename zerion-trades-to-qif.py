@@ -20,12 +20,12 @@ with open('zerion.csv', 'r') as csv_file:
     qif_obj.add_account(acc)
 
     for row in reader:
-        if row[2] != "Trade":
+        if row[5] != "Trade":
             continue
 
         buyAmounts = row[6].split("\n")
-        fiatAmounts = row[9].split("\n") if len(row[9]) > 0 else (row[14].split("\n") if len(row[14]) > 0 else [0])
-        totalFiatAmount = float(reduce(lambda a, b: float(a) + float(b), fiatAmounts))
+        fiatAmounts = list(map(lambda a: (float(a) if len(a) > 0 else 0), row[9].split("\n") if len(row[9]) > 0 else row[14].split("\n")))
+        totalFiatAmount = float(reduce(lambda a, b: a + b, fiatAmounts))
         buyCurrencies = row[7].split("\n")
 
         sellAmounts = row[11].split("\n")
