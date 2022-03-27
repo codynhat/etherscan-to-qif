@@ -63,6 +63,33 @@ with open('coinbase.csv', 'r') as csv_file:
 
             acc.add_transaction(tr1, header='!Type:Invst')
             acc.add_transaction(tr2, header='!Type:Invst')
+        elif row[1] == "Advanced Trade Sell":
+            sellAmount = float(row[3])
+            sellCurrency = row[2]
+            spotPrice = float(row[6]) / float(row[3])
+
+            feeAmount = float(row[8])
+
+            buyAmount = float(row[7])
+            buyCurrency = "USDC"
+            buyPrice = 1.0
+
+            tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=spotPrice, memo=memo, security=(sellCurrency+'-USD'))
+            tr2 = qif.Investment(date=timestamp, action="Buy", quantity=buyAmount, price=buyPrice, memo=memo, security=(buyCurrency+'-USD'))
+            tr3 = qif.Transaction(date=timestamp, amount=-feeAmount, memo=memo)
+
+            tr1._fields[4].custom_print_format='%s%.10f'
+            tr1._fields[3].custom_print_format='%s%.10f'
+            tr2._fields[4].custom_print_format='%s%.10f'
+            tr2._fields[3].custom_print_format='%s%.10f'
+            tr3._fields[4].custom_print_format='%s%.18f'
+
+            acc.add_transaction(tr1, header='!Type:Invst')
+            acc.add_transaction(tr2, header='!Type:Invst')
+
+            if feeAmount > 0:
+                acc.add_transaction(tr3, header='!Type:Invst')
+
         elif row[1] == "Rewards Income" or row[1] == "Coinbase Earn":
             buyAmount = float(row[3])
             buyCurrency = row[2]
@@ -76,7 +103,7 @@ with open('coinbase.csv', 'r') as csv_file:
 
             acc.add_transaction(tr1, header='!Type:Invst')
             acc.add_transaction(tr2, header='!Type:Invst')
-        elif row[1] == "Sell" or row[1] == "Advanced Trade Sell":
+        elif row[1] == "Sell":
             sellAmount = float(row[3])
             sellCurrency = row[2]
             spotPrice = float(row[5])
