@@ -5,6 +5,8 @@ import os
 import re
 
 ADDRESS=os.environ['ADDRESS']
+START_DATE=datetime.date(2020, 2, 27)
+END_DATE=datetime.date(2022, 9, 19)
 
 with open('coinbase.csv', 'r') as csv_file:
     reader = csv.reader(csv_file)
@@ -19,6 +21,9 @@ with open('coinbase.csv', 'r') as csv_file:
     for row in reader:
         memo = row[9]
         timestamp = datetime.datetime.strptime(row[0], "%Y-%m-%dT%H:%M:%SZ")
+
+        if timestamp.date() <= START_DATE or timestamp.date() > END_DATE:
+            continue
 
         if row[1] != "Send":
             continue

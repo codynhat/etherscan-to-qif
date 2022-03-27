@@ -5,8 +5,8 @@ import os
 import re
 
 ADDRESS=os.environ['ADDRESS']
-START_DATE=datetime.date(2020, 2, 27)
-END_DATE=datetime.date(2020, 9, 19)
+START_DATE=datetime.date(2020, 9, 19)
+END_DATE=datetime.date(2022, 9, 19)
 
 with open('coinbase.csv', 'r') as csv_file:
     reader = csv.reader(csv_file)
@@ -25,7 +25,7 @@ with open('coinbase.csv', 'r') as csv_file:
         if timestamp.date() <= START_DATE or timestamp.date() > END_DATE:
             continue
 
-        if row[1] == "Buy":
+        if row[1] == "Buy" or row[1] == "CardBuyBack":
             buyAmount = float(row[3])
             buyCurrency = row[2]
             spotPrice = float(row[5])
@@ -63,7 +63,7 @@ with open('coinbase.csv', 'r') as csv_file:
 
             acc.add_transaction(tr1, header='!Type:Invst')
             acc.add_transaction(tr2, header='!Type:Invst')
-        elif row[1] == "Rewards Income":
+        elif row[1] == "Rewards Income" or row[1] == "Coinbase Earn":
             buyAmount = float(row[3])
             buyCurrency = row[2]
             spotPrice = float(row[5])
@@ -76,12 +76,22 @@ with open('coinbase.csv', 'r') as csv_file:
 
             acc.add_transaction(tr1, header='!Type:Invst')
             acc.add_transaction(tr2, header='!Type:Invst')
-        elif row[1] == "Sell":
+        elif row[1] == "Sell" or row[1] == "Advanced Trade Sell":
             sellAmount = float(row[3])
             sellCurrency = row[2]
             spotPrice = float(row[5])
 
             tr1 = qif.Investment(date=timestamp, action="Sell", quantity=sellAmount, price=spotPrice, memo=memo, security=(sellCurrency+'-USD'))
+
+            tr1._fields[4].custom_print_format='%s%.18f'
+
+            acc.add_transaction(tr1, header='!Type:Invst')
+        elif row[1] == "CardSpend":
+            sellAmount = float(row[3])
+            sellCurrency = row[2]
+            spotPrice = float(row[5])
+
+            tr1 = qif.Investment(date=timestamp, action="SellX", quantity=sellAmount, price=spotPrice, memo=memo, security=(sellCurrency+'-USD'))
 
             tr1._fields[4].custom_print_format='%s%.18f'
 
