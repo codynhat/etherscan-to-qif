@@ -4,6 +4,8 @@ import csv
 import os
 
 ADDRESS=os.environ['ADDRESS']
+CURRENCY="MATIC"
+CHAIN="Polygon"
 
 with open('etherscan.csv', 'r') as csv_file:
     reader = csv.reader(csv_file)
@@ -17,12 +19,12 @@ with open('etherscan.csv', 'r') as csv_file:
         if row[4] != ADDRESS:
             continue
 
-        memo = row[1] + ';' + row[0]
+        memo = CHAIN + ";" + row[1] + ';' + row[0]
         timestamp = datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
         txnFeeETH = float(row[10])
         price = float(row[12])
 
-        tr1 = qif.Investment(date=timestamp, action="SellX", quantity=txnFeeETH, price=price, memo=memo, security="ETH-USD")
+        tr1 = qif.Investment(date=timestamp, action="SellX", quantity=txnFeeETH, price=price, memo=memo, security=CURRENCY+"-USD")
 
         tr1._fields[4].custom_print_format='%s%.18f'
 
