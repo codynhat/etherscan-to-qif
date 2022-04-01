@@ -45,7 +45,7 @@ with open('zerion.csv', 'r') as csv_file:
 
         for i in range(len(sellAmounts)):
             sellAmount = float(sellAmounts[i])
-            fiatAmount = float(fiatAmounts[i]) if len(sellAmounts) > 1 else totalFiatAmount
+            fiatAmount = float(fiatAmounts[i]) if len(fiatAmounts) > 1 else totalFiatAmount
             sellCurrency = sellCurrencies[i]
             if sellCurrency == "BPT-V1":
                 sellCurrency = sellCurrency + "-" + row[13]
@@ -57,7 +57,7 @@ with open('zerion.csv', 'r') as csv_file:
 
         for i in range(len(buyAmounts)):
             buyAmount = float(buyAmounts[i])
-            fiatAmount = float(fiatAmounts[i]) if len(buyAmounts) > 1 else totalFiatAmount
+            fiatAmount = float(fiatAmounts[i]) if len(fiatAmounts) > 1 else totalFiatAmount
             buyCurrency = buyCurrencies[i]
             if buyCurrency == "BPT-V1":
                 buyCurrency = buyCurrency + "-" + row[8]

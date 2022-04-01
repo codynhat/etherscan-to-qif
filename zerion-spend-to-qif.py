@@ -28,9 +28,9 @@ with open('zerion.csv', 'r') as csv_file:
             continue
         
         sellAmount = float(reduce(lambda a, b: float(a) + float(b), sellAmounts))
-        sellCurrency = row[12].split("\n")[0]
-        fiatAmounts = row[14].split("\n")
-        fiatAmount = float(reduce(lambda a, b: float(a) + float(b), fiatAmounts))
+        sellCurrencies = row[12].split("\n")
+        fiatAmounts = list(map(lambda a: (float(a) if len(a) > 0 else 0), row[9].split("\n") if len(row[9]) > 0 else row[14].split("\n")))
+        totalFiatAmount = float(reduce(lambda a, b: a + b, fiatAmounts))
 
         timestamp = datetime.datetime.strptime(row[24], "%Y-%m-%dT%H:%M:%S.000Z")
 
@@ -44,11 +44,18 @@ with open('zerion.csv', 'r') as csv_file:
         })).json()['result']['blockNumber']
         memo = str(int(block_number, 16)) + ';' + txhash + ';Zerion'
 
-        tr1 = qif.Investment(date=timestamp, action="SellX", quantity=sellAmount, price=(fiatAmount/sellAmount), memo=memo, security=(sellCurrency+'-USD'))
+        for i in range(len(sellAmounts)):
+            sellAmount = float(sellAmounts[i])
+            fiatAmount = float(fiatAmounts[i]) if len(sellAmounts) > 1 else totalFiatAmount
+            sellCurrency = sellCurrencies[i]
+            if sellCurrency == "BPT-V1":
+                sellCurrency = sellCurrency + "-" + row[13]
 
-        tr1._fields[3].custom_print_format='%s%.10f'
-        tr1._fields[4].custom_print_format='%s%.18f'
+            tr1 = qif.Investment(date=timestamp, action="SellX", quantity=sellAmount, price=(fiatAmount/sellAmount), memo=memo, security=(sellCurrency+'-USD'))
 
-        acc.add_transaction(tr1, header='!Type:Invst')
+            tr1._fields[3].custom_print_format='%s%.10f'
+            tr1._fields[4].custom_print_format='%s%.18f'
+
+            acc.add_transaction(tr1, header='!Type:Invst')
 
     print(str(qif_obj))
